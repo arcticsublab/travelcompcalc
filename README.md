@@ -19,3 +19,8 @@ Use fictional test data. Do not store real traveler, itinerary, or employee data
 ## Known limitations
 - PDF import may require an available PDF library.
 - Calculation results require user validation against applicable policy and local procedures.
+
+## Calculation Assumptions
+
+See [`docs/calculation-assumptions.md`](docs/calculation-assumptions.md) for
+documented inputs, assumptions, limitations, and required user review.
