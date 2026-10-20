@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Compensatory Time Calculator — UWDC v0.5a</title>
+<style>
+  :root{--navy:#1a3a5c;--navy-light:#2c5a8c;--gold:#b8860b;--bg:#f4f6f8;--border:#cdd5dd;--warn-bg:#fff3cd;--warn-border:#ffc107;}
+  *{box-sizing:border-box;}
+  body{font-family:"Segoe UI",Tahoma,Arial,sans-serif;margin:0;background:var(--bg);color:#1f2a36;line-height:1.45;}
+  header{background:var(--navy);color:#fff;padding:18px 24px;border-bottom:5px solid var(--gold);}
+  header h1{margin:0;font-size:1.35rem;} header p{margin:4px 0 0;font-size:0.85rem;opacity:0.9;}
+  .wrap{max-width:1180px;margin:0 auto;padding:20px;}
+  .card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,0.06);}
+  .card h2{margin:0 0 12px;font-size:1.05rem;color:var(--navy);border-bottom:2px solid var(--gold);padding-bottom:6px;}
+  .card h3{font-size:0.92rem;color:var(--navy-light);margin:16px 0 8px;}
+  label{font-size:0.82rem;font-weight:600;display:block;margin-bottom:3px;}
+  input[type=text],input[type=number],input[type=time],input[type=date],textarea,select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:0.88rem;font-family:inherit;}
+  textarea{resize:vertical;}
+  .grid{display:grid;gap:12px;} .g2{grid-template-columns:1fr 1fr;} .g3{grid-template-columns:1fr 1fr 1fr;} .g4{grid-template-columns:repeat(4,1fr);}
+  button{background:var(--navy);color:#fff;border:none;padding:9px 16px;border-radius:5px;font-size:0.88rem;cursor:pointer;font-weight:600;}
+  button:hover{background:var(--navy-light);}
+  button.secondary{background:#6c757d;} button.gold{background:var(--gold);} button.green{background:#218838;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+  table{width:100%;border-collapse:collapse;font-size:0.78rem;margin-top:8px;}
+  th,td{border:1px solid var(--border);padding:5px 6px;text-align:left;vertical-align:top;}
+  th{background:var(--navy);color:#fff;font-weight:600;} tr:nth-child(even) td{background:#f8fafc;}
+  .day-block{border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px;background:#fbfcfd;}
+  .day-block.intermediate{border-left:4px solid var(--gold);background:#fffdf5;}
+  .day-block.tdy{border-left:4px solid #888;}
+  .day-block.firstlast{border-left:4px solid #218838;}
+  .day-block h4{margin:0 0 10px;color:var(--navy);font-size:0.95rem;}
+  .badge{display:inline-block;font-size:0.68rem;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;}
+  .badge.int{background:var(--gold);color:#fff;} .badge.tdyb{background:#888;color:#fff;} .badge.home{background:#218838;color:#fff;} .badge.fl{background:#2c5a8c;color:#fff;} .badge.idl{background:#c0392b;color:#fff;}
+  .checkrow{display:flex;align-items:center;gap:8px;margin:6px 0;}
+  .checkrow input[type=checkbox]{width:auto;transform:scale(1.2);} .checkrow label{display:inline;margin:0;font-weight:500;}
+  .result-big{font-size:2rem;font-weight:700;color:var(--navy);text-align:center;margin:8px 0;}
+  .muted{color:#667;font-size:0.78rem;}
+  .warn{background:var(--warn-bg);border:1px solid var(--warn-border);padding:8px 12px;border-radius:5px;font-size:0.82rem;margin:8px 0;}
+  .idlwarn{background:#fdecea;border:1px solid #c0392b;padding:8px 12px;border-radius:5px;font-size:0.82rem;margin:8px 0;color:#7a1f17;}
+  .info{background:#e7f1ff;border:1px solid #9ec5fe;padding:8px 12px;border-radius:5px;font-size:0.82rem;margin:8px 0;}
+  .ok{background:#d4edda;border:1px solid #28a745;padding:8px 12px;border-radius:5px;font-size:0.82rem;margin:8px 0;}
+  .leg-edit{background:#fff;border:1px dashed var(--border);padding:8px;border-radius:5px;margin:6px 0;}
+  .leg-edit.needtz{border:2px solid var(--warn-border);background:#fffbe9;}
+  .disclaimer{background:#fff3f3;border:1px solid #e0a0a0;padding:12px;border-radius:6px;font-size:0.8rem;color:#7a2b2b;}
+  .nowrap{white-space:nowrap;} .tz-note{font-size:0.72rem;color:#667;}
+  .sched-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px;}
+  .sched-grid .cell{text-align:center;} .sched-grid .cell label{font-size:0.7rem;} .sched-grid input{padding:4px;text-align:center;}
+  .wkhdr{font-weight:700;color:var(--navy);font-size:0.8rem;margin:8px 0 2px;}
+  .filename{font-size:0.8rem;color:var(--navy);font-weight:600;margin-top:4px;padding:4px 8px;background:#eef3f8;border-radius:4px;display:inline-block;}
+  .ground-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;}
+  fieldset{border:1px solid var(--border);border-radius:5px;padding:8px 10px;margin-top:8px;}
+  legend{font-size:0.78rem;font-weight:700;color:var(--navy-light);padding:0 5px;}
+  .nonflight{font-size:0.8rem;color:#445;background:#f3f5f8;border:1px solid var(--border);border-radius:5px;padding:6px 10px;margin:6px 0;}
+  @media print{header,.no-print,button{display:none !important;} body{background:#fff;} .card{box-shadow:none;border:1px solid #999;page-break-inside:avoid;}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Travel Compensatory Time Calculator</h1>
+  <p>Undersea Warfighting Development Center (UWDC) — UWDCINST 12610.1A & JTR — v0.5a</p>
+</header>
+<div class="wrap">
+
+  <div class="card no-print">
+    <h2>Saved Defaults & Settings</h2>
+    <div id="settingsStatus"></div>
+    <div class="grid g3">
+      <div><label>Employee Name</label><input type="text" id="empName" placeholder="Last, First M."></div>
+      <div><label>Pay Plan / Series / Grade</label><input type="text" id="empGrade" placeholder="GS-0301-13"></div>
+      <div><label>Home City (commute origin)</label><input type="text" id="homeCity" placeholder="e.g., GROTON, CT"></div>
+    </div>
+    <div class="grid g4" style="margin-top:12px;">
+      <div><label>One-Way Normal PDS Commute (hrs)</label><input type="number" step="0.25" min="0" id="commute" value="0.50"></div>
+      <div><label>Work Schedule Type</label>
+        <select id="schedType" onchange="onSchedTypeChange()">
+          <option value="standard">Standard (8 hrs/weekday)</option>
+          <option value="549">5-4-9 Compressed</option>
+          <option value="maxiflex">Maxi-Flex (custom per pay period)</option>
+        </select>
+      </div>
+      <div><label>Pay Period Reference (Sunday)</label><input type="date" id="ppAnchor" value="2026-01-11" onchange="renderSchedDetail();rebuild();"></div>
+      <div><label>Baseline Workday Ref (hrs)</label><input type="number" step="0.5" min="0" id="baseline" value="8"></div>
+    </div>
+    <div id="schedDetail"></div>
+    <div class="btn-row">
+      <button class="green" onclick="saveSettings()">Save Settings (this browser)</button>
+      <button class="secondary" onclick="exportSettings()">Export Settings JSON</button>
+      <button class="secondary" onclick="document.getElementById('importFile').click()">Import Settings JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importSettings(event)">
+      <button class="secondary" onclick="document.getElementById('tripFile').click()">Load Trip (JSON)</button>
+      <input type="file" id="tripFile" accept=".json" style="display:none" onchange="loadTrip(event)">
+      <button class="secondary" onclick="clearSettings()">Reset Defaults</button>
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <h2>Step 1 — Trip Information</h2>
+    <div class="grid g2">
+      <div><label>Purpose / Justification for TAD</label><textarea id="purpose" rows="2"></textarea></div>
+      <div><label>TDY (Destination) Location</label><input type="text" id="tdyLoc" onchange="rebuild()"></div>
+    </div>
+    <div class="grid g2" style="margin-top:12px;">
+      <div><label>Origination Location <span class="muted">(blank = Home)</span></label><input type="text" id="origLoc"></div>
+      <div><label>Final Arrival Location <span class="muted">(blank = Home)</span></label><input type="text" id="finalLoc"></div>
+    </div>
+  </div>
+
+  <div class="card no-print">
+    <h2>Step 2 — Import DTS Itinerary</h2>
+    <div class="grid g2">
+      <div>
+        <label>Option A — Load Itinerary PDF</label>
+        <div id="dropZone" style="border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; background: #fafbfc; cursor: pointer; transition: background 0.2s;">
+          <p style="margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--navy-light);">Drag & Drop DTS Itinerary PDF Here</p>
+          <p style="margin: 4px 0 0 0; font-size: 0.75rem; color: #667;">or click to browse files manually</p>
+          <input type="file" id="pdfFile" accept="application/pdf" style="display:none;" onchange="loadPdf(event)">
+          <div id="pdfFileName" class="filename" style="display:none; margin-top: 8px;"></div>
+        </div>
+        <div class="muted" style="margin-top:4px;">Reads the PDF directly (needs the PDF library; on a restricted network this may be blocked — use Option B).</div>
+      </div>
+      <div>
+        <label>Option B — Paste Itinerary Text (always works offline)</label>
+        <textarea id="rawItin" rows="4" placeholder="Open the DTS PDF, Ctrl+A, Ctrl+C, paste here..."></textarea>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button onclick="parseItinerary()">Parse Itinerary</button>
+      <button class="secondary" onclick="addManualLeg()">+ Add Leg Manually</button>
+      <button class="secondary" onclick="clearTrip()">Clear Trip</button>
+    </div>
+    <div id="parseMsg"></div>
+    <div id="nonFlightMsg"></div>
+  </div>
+
+  <div class="card no-print" id="legsCard" style="display:none;">
+    <h2>Step 2b — Review & Adjust Legs</h2>
+    <div class="info">Times are as scheduled (local). Edit any field to record a delay and add a justification note. Time zones auto-set from the state code; override the <strong>TZ offset</strong> if needed. Set <strong>Leg Type</strong> to Ground for POVs, taxis, or trains to track them in the Ground column instead of Flight.</div>
+    <div id="legsContainer"></div>
+    <div class="btn-row">
+      <button class="secondary" onclick="addManualLeg()">+ Add Leg Manually</button>
+      <button class="secondary" onclick="sortAndRedraw()">Sort Legs by Date/Time</button>
+    </div>
+  </div>
+
+  <div class="card no-print" id="daysCard" style="display:none;">
+    <h2>Step 3 — Travel-Day Settings & Ground Travel</h2>
+    <p class="muted">Scheduled hours auto-fill. Fill in ground/wait as applicable; override anything.</p>
+    <div id="daysContainer"></div>
+    <div class="btn-row"><button class="gold" onclick="calculate()">Calculate Travel Comp Time</button></div>
+  </div>
+
+  <div class="card" id="resultsCard" style="display:none;">
+    <h2>Travel Compensatory Time Earned — Computation</h2>
+    <div id="resultsBody"></div>
+    <div class="btn-row no-print">
+      <button class="gold" onclick="window.print()">Print / Save as PDF</button>
+      <button style="background:#2b579a;" onclick="downloadWord()">Download Encl (6) — Word</button>
+      <button class="green" onclick="saveTrip()">Save Trip (JSON)</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== US STATE -> TIME ZONE (covers virtually all US travel; states never change zones) ===== */
+const STATE_TZ={
+  CT:{std:-5,dst:-4,r:'us'},DE:{std:-5,dst:-4,r:'us'},FL:{std:-5,dst:-4,r:'us'},GA:{std:-5,dst:-4,r:'us'},
+  ME:{std:-5,dst:-4,r:'us'},MD:{std:-5,dst:-4,r:'us'},MA:{std:-5,dst:-4,r:'us'},NH:{std:-5,dst:-4,r:'us'},
+  NJ:{std:-5,dst:-4,r:'us'},NY:{std:-5,dst:-4,r:'us'},NC:{std:-5,dst:-4,r:'us'},OH:{std:-5,dst:-4,r:'us'},
+  PA:{std:-5,dst:-4,r:'us'},RI:{std:-5,dst:-4,r:'us'},SC:{std:-5,dst:-4,r:'us'},VT:{std:-5,dst:-4,r:'us'},
+  VA:{std:-5,dst:-4,r:'us'},WV:{std:-5,dst:-4,r:'us'},DC:{std:-5,dst:-4,r:'us'},MI:{std:-5,dst:-4,r:'us'},
+  IN:{std:-5,dst:-4,r:'us'},KY:{std:-5,dst:-4,r:'us'},
+  AL:{std:-6,dst:-5,r:'us'},AR:{std:-6,dst:-5,r:'us'},IL:{std:-6,dst:-5,r:'us'},IA:{std:-6,dst:-5,r:'us'},
+  KS:{std:-6,dst:-5,r:'us'},LA:{std:-6,dst:-5,r:'us'},MN:{std:-6,dst:-5,r:'us'},MS:{std:-6,dst:-5,r:'us'},
+  MO:{std:-6,dst:-5,r:'us'},NE:{std:-6,dst:-5,r:'us'},ND:{std:-6,dst:-5,r:'us'},OK:{std:-6,dst:-5,r:'us'},
+  SD:{std:-6,dst:-5,r:'us'},TN:{std:-6,dst:-5,r:'us'},TX:{std:-6,dst:-5,r:'us'},WI:{std:-6,dst:-5,r:'us'},
+  CO:{std:-7,dst:-6,r:'us'},ID:{std:-7,dst:-6,r:'us'},MT:{std:-7,dst:-6,r:'us'},NM:{std:-7,dst:-6,r:'us'},
+  UT:{std:-7,dst:-6,r:'us'},WY:{std:-7,dst:-6,r:'us'},
+  AZ:{std:-7,dst:-7,r:'none'},
+  CA:{std:-8,dst:-7,r:'us'},NV:{std:-8,dst:-7,r:'us'},OR:{std:-8,dst:-7,r:'us'},WA:{std:-8,dst:-7,r:'us'},
+  AK:{std:-9,dst:-8,r:'us'},
+  HI:{std:-10,dst:-10,r:'none'},
+  PR:{std:-4,dst:-4,r:'none'},VI:{std:-4,dst:-4,r:'none'},GU:{std:10,dst:10,r:'none'}
+};
+/* ===== IATA DISPLAY CODES (export labels only; never affects parsing/zones/math) ===== */
+const IATA={
+"BOSTON":"BOS","NEW YORK":"JFK","WASHINGTON":"DCA","GROTON":"GON","NEW LONDON":"GON",
+"NORFOLK":"ORF","PROVIDENCE":"PVD","HARTFORD":"BDL","WINDSOR LOCKS":"BDL",
+"PHILADELPHIA":"PHL","CHICAGO":"ORD","AUSTIN":"AUS","DENVER":"DEN","PHOENIX":"PHX",
+"LOS ANGELES":"LAX","SAN DIEGO":"SAN","SAN FRANCISCO":"SFO","SEATTLE":"SEA","TACOMA":"SEA",
+"SEATTLE/TACOMA":"SEA","ANCHORAGE":"ANC","DEADHORSE":"SCC","FAIRBANKS":"FAI",
+"HONOLULU":"HNL","GUAM":"GUM","TAMUNING":"GUM","HAGATNA":"GUM",
+"GLASGOW":"GLA","EDINBURGH":"EDI","LONDON":"LHR","PARIS":"CDG","MARSEILLE":"MRS","NICE":"NCE"
+};
+function iataFor(city){ if(!city) return ''; const up=city.toUpperCase(); for(const k in IATA){ if(up.indexOf(k)>=0) return IATA[k]; } return ''; }
+function stateFromCity(c){ if(!c) return ''; const m=String(c).toUpperCase().match(/,\s*([A-Z]{2})\b/); return m?m[1]:''; }
+function tzFromState(c,ds){
+  const st=stateFromCity(c); if(!st || !STATE_TZ[st]) return null;
+  const z=STATE_TZ[st]; let dst=true;
+  if(ds){ const d=new Date(ds+"T12:00:00Z"); dst = z.r==='us' ? isUSDst(d) : false; }
+  const off=dst?z.dst:z.std;
+  const baseE={[-5]:'E',[-6]:'C',[-7]:'M',[-8]:'P',[-9]:'AK'}[z.std];
+  let lbl;
+  if(z.r==='us'){ lbl=baseE+(dst?'DT':'ST'); }
+  else if(st==='AZ'){ lbl='MST'; } else if(st==='HI'){ lbl='HST'; } else if(st==='GU'){ lbl='ChST'; }
+  else { lbl='UTC'+(off>=0?'+':'')+off; }
+  return {off:off,label:lbl,known:true};
+}
+
+/* ===== OPTIONAL CITY HINT TABLE (fallback for international/non-state cities only) ===== */
+const TZ={
+  // Eastern
+  "BOSTON":{std:-5,dst:-4,label:"E",region:"us"},
+  "LOGAN":{std:-5,dst:-4,label:"E",region:"us"},
+  "BOS":{std:-5,dst:-4,label:"E",region:"us"},
+  "NEW YORK":{std:-5,dst:-4,label:"E",region:"us"},
+  "JFK":{std:-5,dst:-4,label:"E",region:"us"},
+  "LAGUARDIA":{std:-5,dst:-4,label:"E",region:"us"},
+  "LGA":{std:-5,dst:-4,label:"E",region:"us"},
+  "WASHINGTON":{std:-5,dst:-4,label:"E",region:"us"},
+  "DCA":{std:-5,dst:-4,label:"E",region:"us"},
+  "IAD":{std:-5,dst:-4,label:"E",region:"us"},
+  "DULLES":{std:-5,dst:-4,label:"E",region:"us"},
+  "GROTON":{std:-5,dst:-4,label:"E",region:"us"},
+  "GON":{std:-5,dst:-4,label:"E",region:"us"},
+  "NEW LONDON":{std:-5,dst:-4,label:"E",region:"us"},
+  "NORFOLK":{std:-5,dst:-4,label:"E",region:"us"},
+  "ORF":{std:-5,dst:-4,label:"E",region:"us"},
+  "PROVIDENCE":{std:-5,dst:-4,label:"E",region:"us"},
+  "PVD":{std:-5,dst:-4,label:"E",region:"us"},
+  "HARTFORD":{std:-5,dst:-4,label:"E",region:"us"},
+  "BDL":{std:-5,dst:-4,label:"E",region:"us"},
+  "WINDSOR LOCKS":{std:-5,dst:-4,label:"E",region:"us"},
+  "PHILADELPHIA":{std:-5,dst:-4,label:"E",region:"us"},
+  "PHL":{std:-5,dst:-4,label:"E",region:"us"},
+  "BALTIMORE":{std:-5,dst:-4,label:"E",region:"us"},
+  "BWI":{std:-5,dst:-4,label:"E",region:"us"},
+  "ATLANTA":{std:-5,dst:-4,label:"E",region:"us"},
+  "ATL":{std:-5,dst:-4,label:"E",region:"us"},
+  "MIAMI":{std:-5,dst:-4,label:"E",region:"us"},
+  "MIA":{std:-5,dst:-4,label:"E",region:"us"},
+  "ORLANDO":{std:-5,dst:-4,label:"E",region:"us"},
+  "MCO":{std:-5,dst:-4,label:"E",region:"us"},
+  "JACKSONVILLE":{std:-5,dst:-4,label:"E",region:"us"},
+  "JAX":{std:-5,dst:-4,label:"E",region:"us"},
+  
+  // Central
+  "CHICAGO":{std:-6,dst:-5,label:"C",region:"us"},
+  "OHARE":{std:-6,dst:-5,label:"C",region:"us"},
+  "ORD":{std:-6,dst:-5,label:"C",region:"us"},
+  "MIDWAY":{std:-6,dst:-5,label:"C",region:"us"},
+  "MDW":{std:-6,dst:-5,label:"C",region:"us"},
+  "AUSTIN":{std:-6,dst:-5,label:"C",region:"us"},
+  "AUS":{std:-6,dst:-5,label:"C",region:"us"},
+  "DALLAS":{std:-6,dst:-5,label:"C",region:"us"},
+  "DFW":{std:-6,dst:-5,label:"C",region:"us"},
+  "HOUSTON":{std:-6,dst:-5,label:"C",region:"us"},
+  "IAH":{std:-6,dst:-5,label:"C",region:"us"},
+  "HOU":{std:-6,dst:-5,label:"C",region:"us"},
+  "NEW ORLEANS":{std:-6,dst:-5,label:"C",region:"us"},
+  "MSY":{std:-6,dst:-5,label:"C",region:"us"},
+  "NASHVILLE":{std:-6,dst:-5,label:"C",region:"us"},
+  "BNA":{std:-6,dst:-5,label:"C",region:"us"},
+  
+  // Mountain
+  "DENVER":{std:-7,dst:-6,label:"M",region:"us"},
+  "DEN":{std:-7,dst:-6,label:"M",region:"us"},
+  "SALT LAKE CITY":{std:-7,dst:-6,label:"M",region:"us"},
+  "SLC":{std:-7,dst:-6,label:"M",region:"us"},
+  "PHOENIX":{std:-7,dst:-7,label:"MST",region:"none"},
+  "PHX":{std:-7,dst:-7,label:"MST",region:"none"},
+  
+  // Pacific
+  "LOS ANGELES":{std:-8,dst:-7,label:"P",region:"us"},
+  "LAX":{std:-8,dst:-7,label:"P",region:"us"},
+  "SAN DIEGO":{std:-8,dst:-7,label:"P",region:"us"},
+  "SAN":{std:-8,dst:-7,label:"P",region:"us"},
+  "SAN FRANCISCO":{std:-8,dst:-7,label:"P",region:"us"},
+  "SFO":{std:-8,dst:-7,label:"P",region:"us"},
+  "SEATTLE":{std:-8,dst:-7,label:"P",region:"us"},
+  "TACOMA":{std:-8,dst:-7,label:"P",region:"us"},
+  "SEA":{std:-8,dst:-7,label:"P",region:"us"},
+  "PORTLAND":{std:-8,dst:-7,label:"P",region:"us"},
+  "PDX":{std:-8,dst:-7,label:"P",region:"us"},
+  "LAS VEGAS":{std:-8,dst:-7,label:"P",region:"us"},
+  "LAS":{std:-8,dst:-7,label:"P",region:"us"},
+  
+  // Alaska
+  "ANCHORAGE":{std:-9,dst:-8,label:"AK",region:"us"},
+  "ANC":{std:-9,dst:-8,label:"AK",region:"us"},
+  "DEADHORSE":{std:-9,dst:-8,label:"AK",region:"us"},
+  "SCC":{std:-9,dst:-8,label:"AK",region:"us"},
+  "FAIRBANKS":{std:-9,dst:-8,label:"AK",region:"us"},
+  "FAI":{std:-9,dst:-8,label:"AK",region:"us"},
+  "KODIAK":{std:-9,dst:-8,label:"AK",region:"us"},
+  "ADQ":{std:-9,dst:-8,label:"AK",region:"us"},
+  "JUNEAU":{std:-9,dst:-8,label:"AK",region:"us"},
+  "JNU":{std:-9,dst:-8,label:"AK",region:"us"},
+  
+  // Hawaii
+  "HONOLULU":{std:-10,dst:-10,label:"HST",region:"none"},
+  "HNL":{std:-10,dst:-10,label:"HST",region:"none"},
+  
+  // Territories
+  "GUAM":{std:10,dst:10,label:"ChST",region:"none"},
+  "GUM":{std:10,dst:10,label:"ChST",region:"none"},
+  "TAMUNING":{std:10,dst:10,label:"ChST",region:"none"},
+  "HAGATNA":{std:10,dst:10,label:"ChST",region:"none"},
+  
+  // Europe / UK
+  "LONDON":{std:0,dst:1,label:"GMT",region:"eu"},
+  "LHR":{std:0,dst:1,label:"GMT",region:"eu"},
+  "LGW":{std:0,dst:1,label:"GMT",region:"eu"},
+  "HEATHROW":{std:0,dst:1,label:"GMT",region:"eu"},
+  "GATWICK":{std:0,dst:1,label:"GMT",region:"eu"},
+  "GLASGOW":{std:0,dst:1,label:"GMT",region:"eu"},
+  "GLA":{std:0,dst:1,label:"GMT",region:"eu"},
+  "EDINBURGH":{std:0,dst:1,label:"GMT",region:"eu"},
+  "EDI":{std:0,dst:1,label:"GMT",region:"eu"},
+  "PARIS":{std:1,dst:2,label:"CE",region:"eu"},
+  "CDG":{std:1,dst:2,label:"CE",region:"eu"},
+  "MARSEILLE":{std:1,dst:2,label:"CE",region:"eu"},
+  "MRS":{std:1,dst:2,label:"CE",region:"eu"},
+  "NICE":{std:1,dst:2,label:"CE",region:"eu"},
+  "NCE":{std:1,dst:2,label:"CE",region:"eu"}
+};
+
+/* ===== CONSOLIDATED TIMEZONE RESOLVER ===== */
+function resolveTimezone(city, dateISO) {
+  if (!city) return { off: 0, label: "?", known: false };
+  
+  // 1. Resolve State-based timezones
+  const state = stateFromCity(city);
+  if (state && STATE_TZ[state]) {
+    const tzInfo = STATE_TZ[state];
+    let isDst = false;
+    if (dateISO) {
+      const d = new Date(dateISO + "T12:00:00Z");
+      isDst = tzInfo.r === 'us' ? isUSDst(d) : false;
+    }
+    const offset = isDst ? tzInfo.dst : tzInfo.std;
+    const baseE = { [-5]:'E', [-6]:'C', [-7]:'M', [-8]:'P', [-9]:'AK' }[tzInfo.std] || "";
+    const label = tzInfo.r === 'us' ? baseE + (isDst ? 'DT' : 'ST') : (state === 'AZ' ? 'MST' : (state === 'HI' ? 'HST' : 'UTC' + (offset >= 0 ? '+' : '') + offset));
+    return { off: offset, label: label, known: true };
+  }
+
+  // 2. Resolve Airport-based and City-based timezones
+  const upperCity = city.toUpperCase();
+  for (const key in TZ) {
+    if (upperCity.indexOf(key) >= 0) {
+      const tzInfo = TZ[key];
+      let isDst = false;
+      if (dateISO && tzInfo.region) {
+        const d = new Date(dateISO + "T12:00:00Z");
+        isDst = tzInfo.region === 'us' ? isUSDst(d) : (tzInfo.region === 'eu' ? isEUDst(d) : false);
+      }
+      const offset = isDst ? (tzInfo.dst !== undefined ? tzInfo.dst : tzInfo.std + 1) : tzInfo.std;
+      return { off: offset, label: tzInfo.label, known: true };
+    }
+  }
+  
+  return { off: 0, label: "?", known: false };
+}
+function guessTZ(c, ds) { return resolveTimezone(c, ds); }
+function tzKnown(c){ if(!c) return false; const st=stateFromCity(c); if(st&&STATE_TZ[st]) return true; const up=c.toUpperCase(); for(const key in TZ){ if(up.indexOf(key)>=0) return true; } return false; }
+function isUSDst(d){ const mo=d.getUTCMonth(); return (mo>2&&mo<10)||(mo===2&&d.getUTCDate()>=8)||(mo===10&&d.getUTCDate()<2); }
+function isEUDst(d){ const mo=d.getUTCMonth(),day=d.getUTCDate(); if(mo>2&&mo<9) return true; if(mo<2||mo>9) return false; if(mo===2) return day>=25; if(mo===9) return day<25; return true; }
+function labelFromOffset(off,ds){ for(const st in STATE_TZ){ const g=tzFromState('X, '+st,ds); if(g&&g.off===off) return g.label; } for(const k in TZ){ const g=guessTZ(k,ds); if(g.off===off) return g.label; } return (off===0?'':('UTC'+(off>=0?'+':'')+off)); }
+
+/* ===== STATE ===== */
+let legs=[],legSeq=0,dayState={},hotels=[],cars=[];
+let customSched=[0,9,9,9,9,8,0, 0,9,9,9,9,0,0];
+
+/* ===== SETTINGS ===== */
+const LS_KEY='uwdc_travelcomp_settings_v10';
+function collectSettings(){return{empName:val('empName'),empGrade:val('empGrade'),homeCity:val('homeCity'),commute:val('commute'),schedType:val('schedType'),ppAnchor:val('ppAnchor'),baseline:val('baseline'),customSched:customSched.slice()};}
+function applySettings(s){ if(!s) return; ['empName','empGrade','homeCity','commute','schedType','ppAnchor','baseline'].forEach(k=>{ if(s[k]!==undefined) setVal(k,s[k]); }); if(Array.isArray(s.customSched)&&s.customSched.length===14) customSched=s.customSched.slice(); renderSchedDetail(); }
+function saveSettings(){ localStorage.setItem(LS_KEY,JSON.stringify(collectSettings())); status('settingsStatus','ok','Settings saved in this browser.'); }
+function loadSettingsAuto(){ try{ const r=localStorage.getItem(LS_KEY); if(r){ applySettings(JSON.parse(r)); status('settingsStatus','info','Loaded saved settings.'); } else status('settingsStatus','info','No saved settings yet.'); } catch(e){ status('settingsStatus','warn','Could not load settings: '+e.message); } }
+function clearSettings(){ if(!confirm('Reset all saved defaults?')) return; localStorage.removeItem(LS_KEY); ['empName','empGrade','homeCity','purpose','tdyLoc','origLoc','finalLoc'].forEach(id=>setVal(id,'')); setVal('commute','0.50'); setVal('schedType','standard'); setVal('ppAnchor','2026-01-11'); setVal('baseline','8'); customSched=[0,9,9,9,9,8,0,0,9,9,9,9,0,0]; renderSchedDetail(); status('settingsStatus','info','Defaults reset.'); }
+function exportSettings(){ const b=new Blob([JSON.stringify(collectSettings(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='travelcomp_settings.json'; a.click(); }
+function importSettings(ev){ const f=ev.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=e=>{ try{ applySettings(JSON.parse(e.target.result)); saveSettings(); status('settingsStatus','ok','Imported and saved.'); } catch(err){ status('settingsStatus','warn','Import failed: '+err.message); } }; r.readAsText(f); ev.target.value=''; }
+
+/* ===== SCHEDULE ===== */
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+function onSchedTypeChange(){ renderSchedDetail(); rebuild(); }
+function renderSchedDetail(){ const t=val('schedType'),c=document.getElementById('schedDetail'); c.innerHTML='';
+  if(t==='standard'){ c.innerHTML='<div class="info">Standard: 8 scheduled hours each weekday, 0 weekends. For comp, scheduled offset is meal-inclusive (8.5).</div>'; return; }
+  if(t==='549'){ c.innerHTML='<div class="info"><strong>5-4-9:</strong> 9-hr days (offset 9.5), working Friday 8 (8.0), RDO 0.</div>'; return; }
+  let html='<div class="info"><strong>Maxi-Flex:</strong> base daily hours; +0.5 meal auto-added to any day > 0.</div><div class="btn-row"><button class="secondary" onclick="fill549()">Fill 5-4-9</button><button class="secondary" onclick="fillStd()">Fill 8s</button></div>';
+  for(let wk=0;wk<2;wk++){ html+='<div class="wkhdr">Week '+(wk+1)+'</div><div class="sched-grid">'; for(let d=0;d<7;d++){ const idx=wk*7+d; html+='<div class="cell"><label>'+DOW[d]+'</label><input type="number" step="0.25" min="0" value="'+customSched[idx]+'" onchange="customSched['+idx+']=parseFloat(this.value)||0;rebuild();"></div>'; } html+='</div>'; }
+  c.innerHTML=html;
+}
+function fill549(){ customSched=[0,9,9,9,9,8,0,0,9,9,9,9,0,0]; renderSchedDetail(); rebuild(); }
+function fillStd(){ customSched=[0,8,8,8,8,8,0,0,8,8,8,8,8,0]; renderSchedDetail(); rebuild(); }
+function dayIndexInPP(dateISO,anchor){ const a=new Date(anchor+"T00:00:00Z").getTime(),b=new Date(dateISO+"T00:00:00Z").getTime(); if(isNaN(a)||isNaN(b)) return null; let diff=Math.round((b-a)/86400000); return ((diff%14)+14)%14; }
+function scheduleOffsetFor(dateISO){
+  const t=val('schedType'),d=new Date(dateISO+"T12:00:00"),dow=d.getDay();
+  if(t==='standard'){ return (dow>=1&&dow<=5)?{offset:8.5,hasMeal:true}:{offset:0,hasMeal:false}; }
+  if(t==='549'){ const idx=dayIndexInPP(dateISO,val('ppAnchor')); const pat=[0,9,9,9,9,8,0,0,9,9,9,9,0,0]; const base=(idx===null)?((dow>=1&&dow<=5)?9:0):pat[idx];
+    if(base===9) return {offset:9.5,hasMeal:true}; if(base===8) return {offset:8.0,hasMeal:false}; return {offset:0,hasMeal:false}; }
+  const idx=dayIndexInPP(dateISO,val('ppAnchor')); const base=(idx===null)?0:(customSched[idx]||0);
+  return base>0?{offset:base+0.5,hasMeal:true}:{offset:0,hasMeal:false};
+}
+function scheduledHoursFor(dateISO){ return scheduleOffsetFor(dateISO).offset; }
+
+/* ===== PDF LOAD ===== */
+function loadPdf(ev){ const f=ev.target.files[0]; const nameEl=document.getElementById('pdfFileName');
+  if(!f){ nameEl.style.display='none'; return; }
+  nameEl.style.display='inline-block'; nameEl.textContent='Selected: '+f.name+'  ('+(f.size/1024).toFixed(0)+' KB)';
+  msg('Reading PDF...',false);
+  ensurePdfJs().then(pdfjsLib=>{ const fr = new FileReader();
+    fr.onload=function(){ const ta=new Uint8Array(this.result);
+      pdfjsLib.getDocument({data:ta}).promise.then(async pdf=>{ let text='';
+        for(let p=1;p<=pdf.numPages;p++){ const pg=await pdf.getPage(p); const tc=await pg.getTextContent();
+          let items=tc.items.map(i=>({s:i.str,x:i.transform[4],y:Math.round(i.transform[5])}));
+          let byY={}; items.forEach(i=>{ (byY[i.y]=byY[i.y]||[]).push(i); });
+          Object.keys(byY).sort((a,b)=>b-a).forEach(y=>{ byY[y].sort((a,b)=>a.x-b.x); text+=byY[y].map(i=>i.s).join('   ')+'\n'; }); }
+        setVal('rawItin',text); msg('PDF text extracted. Parsing...',false); parseItinerary();
+      }).catch(e=>{ msg('Could not read PDF ('+e.message+'). Use Option B (copy-paste).',true); }); };
+    fr.readAsArrayBuffer(f);
+  }).catch(()=>{ msg('PDF reader unavailable (offline or blocked). Use Option B (copy-paste).',true); }); }
+function ensurePdfJs(){ return new Promise((resolve,reject)=>{ if(window.pdfjsLib){ resolve(window.pdfjsLib); return; }
+  const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  s.onload=()=>{ try{ window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; resolve(window.pdfjsLib);}catch(e){reject(e);} };
+  s.onerror=()=>reject(new Error('load failed')); document.head.appendChild(s); }); }
+
+/* ===== PARSER HELPERS ===== */
+const MO={jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+function parseDate(s){ const m=(s||'').match(/([A-Za-z]{3,9})\s+(\d{1,2}),\s*(\d{4})/); if(!m) return ""; const mo=MO[m[1].slice(0,3).toLowerCase()]; if(mo===undefined) return ""; return new Date(Date.UTC(+m[3],mo,+m[2])).toISOString().slice(0,10); }
+function to24(t){ const m=(t||'').match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i); if(!m) return "00:00"; let h=+m[1]; const mi=m[2],ap=m[3].toUpperCase(); if(ap==='PM'&&h!==12)h+=12; if(ap==='AM'&&h===12)h=0; return String(h).padStart(2,'0')+":"+mi; }
+function clean(s){ return (s||'').replace(/\s+/g,' ').replace(/\b(DEPARTURE|ARRIVAL)\b/ig,'').replace(/[^A-Za-z ,\/\.\-]/g,'').trim().replace(/\s*,\s*/g,', ').replace(/^[,\s]+|[,\s]+$/g,''); }
+
+function split_cities(line) {
+  line = line.trim();
+  const parts = line.split(/\s{2,}/).map(s => s.trim()).filter(Boolean);
+  if (parts.length === 2) return parts;
+  
+  const match_st = line.match(/^([A-Za-z][A-Za-z .\/\\-]*?,\s*[A-Z]{2})\s+(.+)$/);
+  if (match_st) return [match_st[1].trim(), match_st[2].trim()];
+  
+  const match_st_end = line.match(/^(.+?)\s+([A-Za-z][A-Za-z .\/\\-]*?,\s*[A-Z]{2})$/);
+  if (match_st_end) return [match_st_end[1].trim(), match_st_end[2].trim()];
+  
+  const words = line.split(' ');
+  if (words.length === 2) return [words[0], words[1]];
+  
+  if (line.includes('/') && line.includes(' ')) {
+    const parts_space = line.split(' ');
+    if (parts_space.length >= 2) {
+      return [parts_space.slice(0, -1).join(' '), parts_space[parts_space.length - 1]];
+    }
+  }
+  return [line, ""];
+}
+
+/* ===== FLIGHT SCAN (two-column DTS; dep/arr assigned by earliest time instant) ===== */
+function scanAllFlights(raw){
+  const norm=raw.replace(/\u00a0/g,' ').replace(/\r/g,'');
+  const lines=norm.split('\n');
+  const out=[];
+  for(let i=0;i<lines.length;i++){
+    if(!/^\s*Flight\b/i.test(lines[i])) continue;
+    
+    let times=null;
+    let times_idx=-1;
+    for(let j=i+1;j<Math.min(i+8,lines.length);j++){
+      const tdAll=[]; let mm; const g=/(\d{1,2}:\d{2}\s*(?:AM|PM))\s*,?\s*([A-Za-z]{3,9}\s+\d{1,2},\s*\d{4})/ig;
+      while((mm=g.exec(lines[j]))!==null){ tdAll.push({time:to24(mm[1]),date:parseDate(mm[2])}); }
+      if(tdAll.length===2){
+        times=tdAll;
+        times_idx=j;
+        break;
+      }
+    }
+    if(!times || times_idx===-1) continue;
+    
+    let citiesLine=null;
+    for(let k=times_idx-1;k>i;k--){
+      const lineClean=lines[k].trim();
+      if(!lineClean) continue;
+      if(/^(DEPARTURE\s+ARRIVAL|DEPARTURE|ARRIVAL)$/i.test(lineClean)) continue;
+      citiesLine=lineClean;
+      break;
+    }
+    if(!citiesLine) continue;
+    
+    const cities=split_cities(citiesLine);
+    if(!cities[0] || !cities[1]) continue;
+    
+    const ep=[
+      {city:clean(cities[0]),time:times[0].time,date:times[0].date},
+      {city:clean(cities[1]),time:times[1].time,date:times[1].date}
+    ];
+    const inst=e=>{ const [h,mi]=(e.time||'00:00').split(':').map(Number); return new Date((e.date||'1970-01-01')+'T00:00:00Z').getTime()+(h*60+mi)*60000; };
+    let dep,arr;
+    if(inst(ep[0])<=inst(ep[1])){ dep=ep[0]; arr=ep[1]; } else { dep=ep[1]; arr=ep[0]; }
+    out.push({depCity:dep.city,depTime:dep.time,depDate:dep.date,arrCity:arr.city,arrTime:arr.time,arrDate:arr.date});
+  }
+  return out;
+}
+
+/* ===== HOTEL / CAR BLOCK PARSER ===== */
+function splitBlocks(raw){
+  const norm=raw.replace(/\u00a0/g,' ').replace(/\r/g,'');
+  const lines=norm.split('\n');
+  const starts=[];
+  for(let i=0;i<lines.length;i++){ if(/^[ \t]*(Flight|Hotel|Car)\b/i.test(lines[i])) starts.push(i); }
+  const blocks=[];
+  for(let s=0;s<starts.length;s++){ const a=starts[s], b=(s+1<starts.length)?starts[s+1]:lines.length;
+    const text=lines.slice(a,b).join('\n'); const kw=lines[a].trim().split(/\s+/)[0].toUpperCase();
+    blocks.push({kind:kw,text:text}); }
+  return blocks;
+}
+function extractHotel(text){
+  const nameM=text.match(/Hotel\s+(.+)/i); let name=nameM?nameM[1].replace(/\s{2,}.*$/,'').trim():'Lodging';
+  const ci=text.match(/Check-?In\s+([A-Za-z]{3,9}\s+\d{1,2},\s*\d{4})/i);
+  const co=text.match(/Check-?Out\s+([A-Za-z]{3,9}\s+\d{1,2},\s*\d{4})/i);
+  const cityM=text.match(/([A-Za-z][A-Za-z .\-]+,\s*[A-Z]{2})\b/);
+  return {name:name,checkIn:ci?parseDate(ci[1]):'',checkOut:co?parseDate(co[1]):'',city:cityM?cityM[1].trim():''};
+}
+function extractCar(text){
+  const vendorM=text.match(/Car\s+(.+)/i); let vendor=vendorM?vendorM[1].replace(/\s{2,}.*$/,'').trim():'Rental Car';
+  const pu=text.match(/Pick-?Up\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s*,?\s*([A-Za-z]{3,9}\s+\d{1,2},\s*\d{4})/i);
+  const doff=text.match(/Drop-?Off\s+(?:(\d{1,2}:\d{2}\s*(?:AM|PM))\s*,?\s*)?([A-Za-z]{3,9}\s+\d{1,2},\s*\d{4})/i);
+  const cityM=text.match(/([A-Za-z][A-Za-z .\-]+,\s*[A-Z]{2})\b/);
+  return {vendor:vendor,
+    pickTime:pu?to24(pu[1]):'',pickDate:pu?parseDate(pu[2]):'',
+    dropTime:(doff&&doff[1])?to24(doff[1]):'',dropDate:doff?parseDate(doff[2]):'',
+    city:cityM?cityM[1].trim():''};
+}
+/* ===== PARSE ITINERARY ===== */
+function parseItinerary(){ let raw=val('rawItin'); if(!raw.trim()){ msg('Paste itinerary text or load a PDF first.',true); return; }
+  legs=[]; legSeq=0; hotels=[]; cars=[];
+  const flights=scanAllFlights(raw);
+  flights.forEach(f=>{ if(f.depDate&&f.arrDate){
+    const dz=guessTZ(f.depCity,f.depDate), az=guessTZ(f.arrCity,f.arrDate);
+    legs.push({id:++legSeq,type:'flight',depCity:f.depCity,depTime:f.depTime,depDate:f.depDate,depTZ:dz.off,depTZlabel:dz.label,depKnown:dz.known,
+               arrCity:f.arrCity,arrTime:f.arrTime,arrDate:f.arrDate,arrTZ:az.off,arrTZlabel:az.label,arrKnown:az.known,intl:false,note:''}); } });
+  splitBlocks(raw).forEach(blk=>{
+    if(blk.kind==='HOTEL'){ const h=extractHotel(blk.text); if(h.checkIn) hotels.push(h); }
+    else if(blk.kind==='CAR'){ const c=extractCar(blk.text); if(c.pickDate||c.dropDate) cars.push(c); }
+  });
+  if(legs.length===0){ msg('No flight legs detected. Use Option B or add legs manually.',true); return; }
+  sortLegs();
+  
+  // Auto-set the TDY (Destination) Location to the turnaround point (the place of longest stay)
+  let bestCity = "";
+  let maxStay = 0;
+  const sl = legsSorted();
+  for (let i = 0; i < sl.length - 1; i++) {
+    const lg = sl[i];
+    const next = sl[i+1];
+    if (cityMatch(lg.arrCity, next.depCity)) {
+      const d1 = new Date(lg.arrDate + "T00:00:00Z").getTime();
+      const d2 = new Date(next.depDate + "T00:00:00Z").getTime();
+      const stay = Math.round((d2 - d1) / 86400000);
+      if (stay > maxStay) {
+        maxStay = stay;
+        bestCity = lg.arrCity;
+      }
+    }
+  }
+  if (bestCity && !val('tdyLoc')) {
+    setVal('tdyLoc', bestCity);
+  }
+
+  const unknown=[...new Set(legs.flatMap(l=>[l.depKnown?null:l.depCity, l.arrKnown?null:l.arrCity]).filter(Boolean))];
+  const hMsg=hotels.length?(' '+hotels.length+' hotel(s).'):''; const cMsg=cars.length?(' '+cars.length+' car rental(s).'):'';
+  if(unknown.length){ msg('Parsed '+legs.length+' leg(s).'+hMsg+cMsg+' Set TZ offset (Step 2b) for: '+unknown.join('; ')+'.',true); }
+  else { msg('Parsed '+legs.length+' leg(s).'+hMsg+cMsg+' Review Steps 2b/3.',false); }
+  renderNonFlight();
+  renderLegs(); buildDays(); document.getElementById('legsCard').style.display='block'; document.getElementById('daysCard').style.display='block';
+  autoSaveSession();
+}
+
+/* ===== HOTELS / CARS HELPERS & DISPLAY ===== */
+function hotelForArrival(dateISO,city){ for(const h of hotels){ if(h.checkIn===dateISO){ if(!h.city||!city||cityMatch(h.city,city)) return h.name; } } for(const h of hotels){ if(h.city&&city&&cityMatch(h.city,city)) return h.name; } return ''; }
+function renderNonFlight(){ const c=document.getElementById('nonFlightMsg'); let html='';
+  if(hotels.length){ html+='<div class="nonflight"><strong>Hotels (non-creditable dwell):</strong><ul style="margin:4px 0 0;">'; hotels.forEach(h=>{ html+='<li>'+esc(h.name)+(h.city?(' — '+esc(h.city)):'')+': '+(h.checkIn?fmtDate(h.checkIn):'?')+' → '+(h.checkOut?fmtDate(h.checkOut):'?')+'</li>'; }); html+='</ul></div>'; }
+  if(cars.length){ html+='<div class="nonflight"><strong>Car rentals (non-creditable):</strong><ul style="margin:4px 0 0;">'; cars.forEach(r=>{ html+='<li>'+esc(r.vendor)+(r.city?(' — '+esc(r.city)):'')+': '+(r.pickDate?fmtDate(r.pickDate):'?')+(r.pickTime?(' '+r.pickTime):'')+' → '+(r.dropDate?fmtDate(r.dropDate):'?')+(r.dropTime?(' '+r.dropTime):'')+'</li>'; }); html+='</ul></div>'; }
+  c.innerHTML=html; }
+
+/* ===== SORT / TIME ===== */
+function sortLegs(){ legs.sort((a,b)=>legSortKey(a)-legSortKey(b)); }
+function legSortKey(l){ if(!l.depDate) return 0; const [h,mi]=(l.depTime||'00:00').split(':').map(Number); return new Date(l.depDate+"T00:00:00Z").getTime()+(h*60+mi)*60000; }
+function dt(dISO,time,tz){ if(!dISO||!time) return 0; const [h,mi]=time.split(':').map(Number); return new Date(dISO+"T00:00:00Z").getTime()+(h*60+mi-tz*60)*60000; }
+/* ===== LEGS UI ===== */
+function renderLegs(){ const c=document.getElementById('legsContainer'); c.innerHTML='';
+  legs.forEach((lg,idx)=>{ const div=document.createElement('div'); const need=(!lg.depKnown||!lg.arrKnown); div.className='leg-edit'+(need?' needtz':''); div.id='legcard_'+lg.id;
+    div.innerHTML='<strong>Leg '+(idx+1)+'</strong>'+(need?' <span class="badge idl">SET TZ</span>':'')+
+      '<div style="margin-top:6px; margin-bottom:6px;"><label style="display:inline-block; margin-right:8px; font-weight:700;">Leg Type:</label>'+
+      '<select style="width:auto; display:inline-block;" onchange="updLeg('+lg.id+',\'type\',this.value)">'+
+        '<option value="flight" '+(lg.type==='flight'||!lg.type?'selected':'')+'>Flight</option>'+
+        '<option value="ground" '+(lg.type==='ground'?'selected':'')+'>Ground Transit (POV, Taxi, Bus, Train)</option>'+
+      '</select></div>'+
+      '<div class="grid g4" style="margin-top:6px;">'+
+        '<div><label>Depart City</label><input type="text" value="'+esc(lg.depCity)+'" onchange="updLeg('+lg.id+',\'depCity\',this.value)"></div>'+
+        '<div><label>Depart Date</label><input type="date" value="'+lg.depDate+'" onchange="updLeg('+lg.id+',\'depDate\',this.value)"></div>'+
+        '<div><label>Depart Time</label><input type="time" value="'+lg.depTime+'" onchange="updLeg('+lg.id+',\'depTime\',this.value)"></div>'+
+        '<div><label>Dep TZ offset <span class="tz-note">('+(lg.depKnown?lg.depTZlabel:'set me')+')</span></label><input type="number" step="1" value="'+lg.depTZ+'" onchange="updLeg('+lg.id+',\'depTZ\',this.value)"></div>'+
+      '</div>'+
+      '<div class="grid g4" style="margin-top:6px;">'+
+        '<div><label>Arrive City</label><input type="text" value="'+esc(lg.arrCity)+'" onchange="updLeg('+lg.id+',\'arrCity\',this.value)"></div>'+
+        '<div><label>Arrive Date</label><input type="date" value="'+lg.arrDate+'" onchange="updLeg('+lg.id+',\'arrDate\',this.value)"></div>'+
+        '<div><label>Arrive Time</label><input type="time" value="'+lg.arrTime+'" onchange="updLeg('+lg.id+',\'arrTime\',this.value)"></div>'+
+        '<div><label>Arr TZ offset <span class="tz-note">('+(lg.arrKnown?lg.arrTZlabel:'set me')+')</span></label><input type="number" step="1" value="'+lg.arrTZ+'" onchange="updLeg('+lg.id+',\'arrTZ\',this.value)"></div>'+
+      '</div>'+
+      '<div class="grid g2" style="margin-top:6px;align-items:end;">'+
+        '<div></div>'+
+        '<div><label>Adjustment / Delay Justification Note</label><input type="text" value="'+esc(lg.note)+'" onchange="updLeg('+lg.id+',\'note\',this.value)"></div>'+
+      '</div>'+
+      '<div class="btn-row"><button class="secondary" onclick="delLeg('+lg.id+')">Remove Leg</button></div>';
+    c.appendChild(div); }); }
+function updLeg(id,f,v){ const lg=legs.find(l=>l.id===id); if(!lg) return; if(f==='depTZ'||f==='arrTZ') v=parseInt(v,10); lg[f]=v;
+  if(f==='depTZ'){ lg.depKnown=true; lg.depTZlabel=labelFromOffset(v,lg.depDate)||('UTC'+(v>=0?'+':'')+v); renderLegs(); }
+  if(f==='arrTZ'){ lg.arrKnown=true; lg.arrTZlabel=labelFromOffset(v,lg.arrDate)||('UTC'+(v>=0?'+':'')+v); renderLegs(); }
+  if(f==='depCity'){ const g=guessTZ(v,lg.depDate); if(g.known){ lg.depTZ=g.off; lg.depTZlabel=g.label; lg.depKnown=true; } renderLegs(); }
+  if(f==='arrCity'){ const g=guessTZ(v,lg.arrDate); if(g.known){ lg.arrTZ=g.off; lg.arrTZlabel=g.label; lg.arrKnown=true; } renderLegs(); }
+  if(f==='depDate'){ const g=guessTZ(lg.depCity,v); if(g.known){ lg.depTZ=g.off; lg.depTZlabel=g.label; lg.depKnown=true; } renderLegs(); }
+  if(f==='arrDate'){ const g=guessTZ(lg.arrCity,v); if(g.known){ lg.arrTZ=g.off; lg.arrTZlabel=g.label; lg.arrKnown=true; } renderLegs(); }
+  buildDays();
+  autoSaveSession();
+}
+function sortAndRedraw(){ sortLegs(); renderLegs(); buildDays(); msg('Legs sorted by date/time.',false); autoSaveSession(); }
+function delLeg(id){ legs=legs.filter(l=>l.id!==id); renderLegs(); buildDays(); autoSaveSession(); }
+function addManualLeg(){ legs.push({id:++legSeq,type:'flight',depCity:'',depDate:'',depTime:'',depTZ:0,depTZlabel:'?',depKnown:false,arrCity:'',arrDate:'',arrTime:'',arrTZ:0,arrTZlabel:'?',arrKnown:false,intl:false,note:''}); document.getElementById('legsCard').style.display='block'; document.getElementById('daysCard').style.display='block'; renderLegs(); buildDays(); autoSaveSession(); }
+
+/* ===== STOPS ===== */
+function cityMatch(a,b){ if(!a||!b) return false; a=a.toUpperCase(); b=b.toUpperCase(); const ca=a.split(',')[0].trim(), cb=b.split(',')[0].trim(); return a.indexOf(cb)>=0 || b.indexOf(ca)>=0 || ca===cb; }
+function legsSorted(){ return legs.slice().sort((a,b)=>legSortKey(a)-legSortKey(b)); }
+function analyzeStops(){ const tdy=val('tdyLoc')||''; const info={}; const sl=legsSorted();
+  for(let i=0;i<sl.length;i++){ const lg=sl[i]; const next=sl[i+1]; if(next){ const sameCity=cityMatch(lg.arrCity,next.depCity); const overnight=sameCity&&next.depDate>lg.arrDate;
+    if(overnight){ const isTDY=cityMatch(lg.arrCity,tdy); info[lg.arrDate]=info[lg.arrDate]||{}; info[lg.arrDate].stopCity=lg.arrCity; info[lg.arrDate].tdy=isTDY; info[lg.arrDate].intermediate=!isTDY; info[next.depDate]=info[next.depDate]||{}; info[next.depDate].stopCity=next.depCity; info[next.depDate].tdy=isTDY; info[next.depDate].intermediate=!isTDY; } } }
+  return info; }
+function detectIDL(){ for(const lg of legs){ if((lg.depTZ<=-8 && lg.arrTZ>=8) || (lg.depTZ>=8 && lg.arrTZ<=-8)) return true; const a=dt(lg.depDate,lg.depTime,lg.depTZ), b=dt(lg.arrDate,lg.arrTime,lg.arrTZ); if(a&&b&&b<a) return true; } return false; }
+
+/* ===== DAY WINDOWS (verified midnight-split) ===== */
+function distinctDays(){ const s=new Set(); legs.forEach(l=>{ if(l.depDate)s.add(l.depDate); if(l.arrDate)s.add(l.arrDate); }); return [...s].sort(); }
+function refZoneForDay(day){ let best=null,bestUTC=Infinity; legs.forEach(l=>{ if(l.depDate===day){ const u=dt(l.depDate,l.depTime,l.depTZ); if(u<bestUTC){ bestUTC=u; best=l.depTZ; } } }); if(best===null){ legs.forEach(l=>{ if(l.arrDate===day){ const u=dt(l.arrDate,l.arrTime,l.arrTZ); if(u<bestUTC){ bestUTC=u; best=l.arrTZ; } } }); } return best===null?0:best; }
+function dayStartUTC(day,tz){ return new Date(day+"T00:00:00Z").getTime() - tz*3600000; }
+function dayWindowUTC(day){ const days=distinctDays(); const idx=days.indexOf(day); const rzThis=refZoneForDay(day); const endUTC=dayStartUTC(day,rzThis)+86400000; let startUTC; if(idx<=0){ startUTC=dayStartUTC(day,rzThis); } else { const prev=days[idx-1]; const rzPrev=refZoneForDay(prev); startUTC=dayStartUTC(prev,rzPrev)+86400000; } return {startUTC,endUTC}; }
+function flightMinutesOnDay(leg,day){ const start=dt(leg.depDate,leg.depTime,leg.depTZ), end=dt(leg.arrDate,leg.arrTime,leg.arrTZ); if(end<=start) return 0; const w=dayWindowUTC(day); const lo=Math.max(start,w.startUTC), hi=Math.min(end,w.endUTC); return Math.max(0,(hi-lo)/60000); }
+
+/* ===== DAYS UI ===== */
+function buildDays(){ const days=distinctDays(),homeCity=(val('homeCity')||'').toUpperCase().trim(); const stops=analyzeStops(); const firstDay=days[0], lastDay=days[days.length-1]; const c=document.getElementById('daysContainer'); c.innerHTML='';
+  days.forEach(day=>{ const so=scheduleOffsetFor(day); const autoSched=so.offset; const st=stops[day]||{}; const isInt=st.intermediate===true; const isTDYstop=st.tdy===true; const isFirst=(day===firstDay), isLast=(day===lastDay); const isWork=autoSched>0;
+    if(!dayState[day]) dayState[day]={ commute:((isFirst||isLast)&&isWork), schedHrs:autoSched, hasMeal:so.hasMeal, workedHrs:0, schedAuto:true, airToHotel:0,hotelToAir:0,preWait:0,toTerminal:0,fromTerminal:0, commuteAuto:true };
+    else { if(dayState[day].schedAuto){ dayState[day].schedHrs=autoSched; dayState[day].hasMeal=so.hasMeal; } if(dayState[day].commuteAuto){ dayState[day].commute=((isFirst||isLast)&&isWork); } }
+    const ds=dayState[day],d=new Date(day+"T12:00:00"),dowName=DOW[d.getDay()];
+    const departsHome=legs.some(l=>l.depDate===day&&homeCity&&l.depCity.toUpperCase().indexOf(homeCity)>=0); const arrivesHome=legs.some(l=>l.arrDate===day&&homeCity&&l.arrCity.toUpperCase().indexOf(homeCity)>=0);
+    let cls='day-block'; let badges='';
+    if(isFirst||isLast){ cls+=' firstlast'; badges+='<span class="badge fl">'+(isFirst?'FIRST TRAVEL DAY':'')+(isFirst&&isLast?' / ':'')+(isLast?'LAST TRAVEL DAY':'')+'</span>'; }
+    if(isInt){ cls+=' intermediate'; badges+='<span class="badge int">INTERMEDIATE STOP'+(st.stopCity?' @ '+esc(st.stopCity):'')+'</span>'; }
+    if(isTDYstop){ cls+=' tdy'; badges+='<span class="badge tdyb">TDY OVERNIGHT</span>'; }
+    if(departsHome||arrivesHome){ badges+='<span class="badge home">HOME LEG</span>'; }
+    const div=document.createElement('div'); div.className=cls;
+    const hasDeparture=legs.some(l=>l.depDate===day); const hasArrival=legs.some(l=>l.arrDate===day);
+    let g='<fieldset><legend>Ground Travel & Wait (creditable)</legend><div class="ground-grid">';
+    if(isFirst){ g+='<div><label>Home -> Departure Terminal (hrs)</label><input type="number" step="0.25" min="0" value="'+(ds.toTerminal||0)+'" onchange="dayState[\''+day+'\'].toTerminal=parseFloat(this.value)||0;autoSaveSession();"></div>'; }
+    else if(hasDeparture){ g+='<div><label>Lodging/TDY -> Departure Airport (hrs)</label><input type="number" step="0.25" min="0" value="'+(ds.hotelToAir||0)+'" onchange="dayState[\''+day+'\'].hotelToAir=parseFloat(this.value)||0;autoSaveSession();"></div>'; } else { g+='<div></div>'; }
+    if(hasDeparture||isFirst){ g+='<div><label>Pre-Flight Wait (hrs)</label><input type="number" step="0.25" min="0" value="'+(ds.preWait||0)+'" onchange="dayState[\''+day+'\'].preWait=parseFloat(this.value)||0;autoSaveSession();"></div>'; } else { g+='<div></div>'; }
+    if(isLast){ g+='<div><label>Arrival Terminal -> Home (hrs)</label><input type="number" step="0.25" min="0" value="'+(ds.fromTerminal||0)+'" onchange="dayState[\''+day+'\'].fromTerminal=parseFloat(this.value)||0;autoSaveSession();"></div>'; }
+    else if(hasArrival){ g+='<div><label>Arrival Airport -> Lodging/TDY (hrs)</label><input type="number" step="0.25" min="0" value="'+(ds.airToHotel||0)+'" onchange="dayState[\''+day+'\'].airToHotel=parseFloat(this.value)||0;autoSaveSession();"></div>'; } else { g+='<div></div>'; }
+    g+='</div></fieldset>';
+    div.innerHTML='<h4>'+fmtDate(day)+' <span class="muted">('+dowName+', sched offset '+autoSched+' hr'+(so.hasMeal?', meal-incl':'')+')</span> '+badges+'</h4>'+
+      '<div class="checkrow"><input type="checkbox" id="cm_'+day+'" '+(ds.commute?'checked':'')+' onchange="dayState[\''+day+'\'].commute=this.checked;dayState[\''+day+'\'].commuteAuto=false;autoSaveSession();"><label for="cm_'+day+'">Subtract normal one-way PDS commute?</label></div>'+
+      '<div class="grid g3">'+
+        '<div><label>Scheduled Offset (meal-incl., auto)</label><input type="number" step="0.25" min="0" value="'+ds.schedHrs+'" onchange="dayState[\''+day+'\'].schedHrs=parseFloat(this.value)||0;dayState[\''+day+'\'].schedAuto=false;autoSaveSession();"></div>'+
+        '<div><label>Hours Actually Worked</label><input type="number" step="0.25" min="0" value="'+ds.workedHrs+'" onchange="dayState[\''+day+'\'].workedHrs=parseFloat(this.value)||0;autoSaveSession();"></div>'+
+        '<div><label> </label><div class="muted" style="padding-top:6px;">Flight/Ground transit computed per-leg with midnight split.</div></div>'+
+      '</div>'+g;
+    c.appendChild(div); });
+  Object.keys(dayState).forEach(d=>{ if(!days.includes(d)) delete dayState[d]; }); }
+function rebuild(){ if(legs.length){ buildDays(); } }
+
+/* ===== CALCULATE (verified engine math with midnight split & global layovers) ===== */
+function roundTo15(min){ return Math.round(min/15)*15; }
+function calculate(){ const days=distinctDays(); if(days.length===0){ msg('No legs to calculate.',true); return; }
+  const commuteHrs=parseFloat(val('commute'))||0; const firstDay=days[0], lastDay=days[days.length-1];
+  let rows=[],gGrossR=0,gComp=0,gSched=0,gWorkedCap=0,gCommute=0,gFlight=0,gLayover=0,gGround=0,gWait=0;
+
+  // Pre-calculate all layovers across the entire trip (sorted chronologically)
+  const sl = legsSorted();
+  const layovers = [];
+  for (let i = 0; i < sl.length - 1; i++) {
+    const thisFlight = sl[i];
+    const nextFlight = sl[i + 1];
+    const arrUTC = dt(thisFlight.arrDate, thisFlight.arrTime, thisFlight.arrTZ);
+    const depUTC = dt(nextFlight.depDate, nextFlight.depTime, nextFlight.depTZ);
+    const total_layover = (depUTC - arrUTC) / 60000;
+    const sameCity = cityMatch(thisFlight.arrCity, nextFlight.depCity);
+    
+    // Check if same city, positive, <= 24 hours, and no hotel is booked
+    if (sameCity && total_layover > 0 && total_layover <= 1440) {
+      const overnight = nextFlight.depDate > thisFlight.arrDate;
+      const hasHotel = hotelForArrival(thisFlight.arrDate, thisFlight.arrCity);
+      if (!(overnight && hasHotel)) {
+        layovers.push({
+          city: thisFlight.arrCity,
+          startUTC: arrUTC,
+          endUTC: depUTC,
+          total: total_layover,
+          credited: total_layover // Credited equals the full, uncapped layover time
+        });
+      }
+    }
+  }
+
+  days.forEach(day => {
+    const ds = dayState[day] || {};
+    const isFirst = (day === firstDay), isLast = (day === lastDay);
+
+    let flightMin = 0, layoverMin = 0, groundMin = 0, detail = [];
+
+    // Add ground travel before first flight (if any)
+    if (isFirst && (ds.toTerminal || 0) > 0) {
+      groundMin += ds.toTerminal * 60;
+      detail.push('Home->Terminal ' + ds.toTerminal.toFixed(2) + 'h');
+    } else if (!isFirst && (ds.hotelToAir || 0) > 0) {
+      groundMin += ds.hotelToAir * 60;
+      detail.push('Lodging/TDY->Airport ' + ds.hotelToAir.toFixed(2) + 'h');
+    }
+
+    // Add pre-flight wait (if any) - limit and caps removed as requested
+    const waitCredited = ds.preWait || 0;
+    const waitMin = waitCredited * 60;
+    if (waitCredited > 0) {
+      detail.push('Pre-flight wait ' + waitCredited.toFixed(2) + 'h');
+    }
+
+    // Gather all transits that have any minutes on this day (cross-midnight support)
+    const dayFlights = legs
+      .filter(l => flightMinutesOnDay(l, day) > 0)
+      .sort((a, b) => dt(a.depDate, a.depTime, a.depTZ) - dt(b.depDate, b.depTime, b.depTZ));
+
+    // Add flight or ground transit minutes for these transits
+    for (let i = 0; i < dayFlights.length; i++) {
+      const thisFlight = dayFlights[i];
+      const fm = flightMinutesOnDay(thisFlight, day);
+      if (fm > 0) {
+        if (thisFlight.type === 'ground') {
+          groundMin += fm;
+          detail.push('Ground Leg ' + esc(thisFlight.depCity) + '→' + esc(thisFlight.arrCity) + ' ' + (fm / 60).toFixed(2) + 'h');
+        } else {
+          flightMin += fm;
+          detail.push('Flight ' + esc(thisFlight.depCity) + '→' + esc(thisFlight.arrCity) + ' ' + (fm / 60).toFixed(2) + 'h');
+        }
+      }
+    }
+
+    // Add layover minutes that occur on this day
+    layovers.forEach(ly => {
+      const w = dayWindowUTC(day);
+      const overlapStart = Math.max(ly.startUTC, w.startUTC);
+      const overlapEnd = Math.min(ly.endUTC, w.endUTC);
+      const overlapMins = Math.max(0, (overlapEnd - overlapStart) / 60000);
+      if (overlapMins > 0) {
+        const dayCredited = ly.credited * (overlapMins / ly.total);
+        layoverMin += dayCredited;
+        detail.push(
+          'Layover at ' + esc(ly.city) + ' ' +
+          (dayCredited / 60).toFixed(2) + 'h'
+        );
+      }
+    });
+
+    // Add ground travel after last flight (if any)
+    if (isLast && (ds.fromTerminal || 0) > 0) {
+      groundMin += ds.fromTerminal * 60;
+      detail.push('Terminal->Home ' + ds.fromTerminal.toFixed(2) + 'h');
+    } else if (!isLast && (ds.airToHotel || 0) > 0) {
+      groundMin += ds.airToHotel * 60;
+      detail.push('Airport->Lodging/TDY ' + ds.airToHotel.toFixed(2) + 'h');
+    }
+
+    const grossMin = flightMin + layoverMin + groundMin + waitMin;
+    const grossRMin = roundTo15(grossMin);
+    let commuteAppMin = 0;
+    if ((isFirst || isLast) && ds.commute) commuteAppMin = commuteHrs * 60;
+    const schedMin = (ds.schedHrs || 0) * 60;
+    const workedActualMin = (ds.workedHrs || 0) * 60;
+    const workedCapMin = Math.min(workedActualMin, schedMin);
+    const compMin = Math.max(0, roundTo15(grossRMin - commuteAppMin - schedMin + workedCapMin));
+    if (grossMin === 0 && compMin === 0) return;
+    gGrossR += grossRMin; gComp += compMin; gSched += schedMin; gWorkedCap += workedCapMin; gCommute += commuteAppMin; gFlight += flightMin; gLayover += layoverMin; gGround += groundMin; gWait += waitMin;
+    rows.push({ day, flightMin, layoverMin, groundMin, waitMin, grossRMin, commuteAppMin, schedMin, workedActualMin, workedCapMin, compMin, detail: detail.join('; '), isFirst, isLast });
+  });
+    renderResults(rows,{gGrossR,gComp,gSched,gWorkedCap,gCommute,gFlight,gLayover,gGround,gWait,commuteHrs});
+}
+
+function renderResults(rows,T){ const schedName={standard:'Standard',549:'5-4-9',maxiflex:'Maxi-Flex'}[val('schedType')]||val('schedType'); const idl=detectIDL();
+  let html='<div class="grid g2" style="font-size:0.85rem;"><div><strong>Employee:</strong> '+(esc(val('empName'))||'-')+'</div><div><strong>Grade:</strong> '+(esc(val('empGrade'))||'-')+'</div><div style="grid-column:1/3;"><strong>Purpose / TAD:</strong> '+(esc(val('purpose'))||'-')+'</div><div><strong>TDY:</strong> '+(esc(val('tdyLoc'))||'-')+'</div><div><strong>One-Way PDS Commute:</strong> '+T.commuteHrs.toFixed(2)+' hr</div><div style="grid-column:1/3;"><strong>Schedule:</strong> '+schedName+'</div></div>';
+  if(idl){ html+='<div class="idlwarn"><strong>International Date Line crossing detected.</strong> Verify the per-day breakdown manually.</div>'; }
+  html+='<div class="result-big">'+(T.gComp/60).toFixed(2)+' hours <span style="font-size:1rem;color:#667;">('+minToHHMM(T.gComp)+')</span></div><p style="text-align:center;" class="muted">Total Travel Compensatory Time Earned</p>';
+    html+='<table><thead><tr><th>Day</th><th>Flight</th><th>Layover</th><th>Ground</th><th>Wait</th><th>= Travel</th><th>- Commute</th><th>- Sched</th><th>+ Worked</th><th>= Comp</th><th>Detail</th></tr></thead><tbody>';
+  rows.forEach(r=>{ html+='<tr><td class="nowrap">'+fmtDate(r.day)+'</td>'
+    +'<td>'+(r.flightMin/60).toFixed(2)+'</td>'
+    +'<td>'+(r.layoverMin/60).toFixed(2)+'</td>'
+    +'<td>'+(r.groundMin/60).toFixed(2)+'</td>'
+    +'<td>'+(r.waitMin/60).toFixed(2)+'</td>'
+    +'<td><strong>'+(r.grossRMin/60).toFixed(2)+'</strong></td>'
+    +'<td>'+(r.commuteAppMin>0?('-'+(r.commuteAppMin/60).toFixed(2)):'-')+'</td>'
+    +'<td>'+(r.schedMin>0?('-'+(r.schedMin/60).toFixed(2)):'-')+'</td>'
+    +'<td>'+(r.workedCapMin>0?('+'+(r.workedCapMin/60).toFixed(2)):'-')+'</td>'
+    +'<td><strong>'+(r.compMin/60).toFixed(2)+'</strong></td>'
+    +'<td><span class="muted">'+(esc(r.detail)||'-')+'</span></td></tr>'; });
+  html+='<tr style="font-weight:700;background:#eef3f8;"><td>TOTAL</td>'
+    +'<td>'+(T.gFlight/60).toFixed(2)+'</td>'
+    +'<td>'+(T.gLayover/60).toFixed(2)+'</td>'
+    +'<td>'+(T.gGround/60).toFixed(2)+'</td>'
+    +'<td>'+(T.gWait/60).toFixed(2)+'</td>'
+    +'<td>'+(T.gGrossR/60).toFixed(2)+'</td>'
+    +'<td>'+(T.gCommute>0?('-'+(T.gCommute/60).toFixed(2)):'-')+'</td>'
+    +'<td>'+(T.gSched>0?('-'+(T.gSched/60).toFixed(2)):'-')+'</td>'
+    +'<td>'+(T.gWorkedCap>0?('+'+(T.gWorkedCap/60).toFixed(2)):'-')+'</td>'
+    +'<td>'+(T.gComp/60).toFixed(2)+'</td>'
+    +'<td></td></tr></tbody></table>';
+  const noted=legs.filter(l=>l.note&&l.note.trim()); if(noted.length){ html+='<h3>Delay / Adjustment Justifications</h3><ul style="font-size:0.83rem;">'; noted.forEach(l=>{ html+='<li><strong>'+esc(l.depCity)+' -> '+esc(l.arrCity)+' ('+fmtDate(l.depDate)+'):</strong> '+esc(l.note)+'</li>'; }); html+='</ul>'; }
+  document.getElementById('resultsBody').innerHTML=html; document.getElementById('resultsCard').style.display='block'; document.getElementById('resultsCard').scrollIntoView({behavior:'smooth'});
+  window._lastRows=rows; window._lastTotals=T; }
+
+/* ===== CHRONOLOGY ===== */
+function buildChronology(){
+  const days=distinctDays(); if(!days.length) return [];
+  const firstDay=days[0], lastDay=days[days.length-1];
+  const homeCity=val('homeCity')||'';
+  const origLabel=(val('origLoc')||'').trim(), finalLabel=(val('finalLoc')||'').trim();
+  const out=[];
+  days.forEach(day=>{
+    const dLegs=legs.filter(l=>l.depDate===day).sort((a,b)=>dt(a.depDate,a.depTime,a.depTZ)-dt(b.depDate,b.depTime,b.depTZ));
+    const aLegs=legs.filter(l=>l.arrDate===day).sort((a,b)=>dt(a.arrDate,a.arrTime,a.arrTZ)-dt(b.arrDate,b.arrTime,b.arrTZ));
+    const ds=dayState[day]||{};
+    const isFirst=(day===firstDay), isLast=(day===lastDay);
+    let dayStops=[];
+    if(dLegs.length){
+      const firstDep=dLegs[0];
+      // Only add artificial departure stops if the first departing leg is NOT a ground leg
+      if(firstDep.type !== 'ground'){
+        const depUTC=dt(firstDep.depDate,firstDep.depTime,firstDep.depTZ);
+        const waitMin=(ds.preWait||0)*60; // limit removed
+        const arriveAirportUTC=depUTC-waitMin*60000;
+        let groundMin=isFirst?((ds.toTerminal||0)*60):((ds.hotelToAir||0)*60);
+        const leaveOriginUTC=arriveAirportUTC-groundMin*60000;
+        let depLabel=isFirst?(origLabel?('Depart '+origLabel):'Depart Home'):'Depart Lodging/TDY';
+        dayStops.push({label:depLabel,city:firstDep.depCity,utc:leaveOriginUTC,tz:firstDep.depTZ,known:firstDep.depKnown});
+        dayStops.push({label:'Arrive '+codeLabel(firstDep.depCity)+' (Airport)',city:firstDep.depCity,utc:arriveAirportUTC,tz:firstDep.depTZ,known:firstDep.depKnown});
+      }
+    }
+    dLegs.forEach(lg=>{
+      const modeLbl = lg.type === 'ground' ? ' (Ground)' : '';
+      dayStops.push({label:'Depart '+codeLabel(lg.depCity)+modeLbl,city:lg.depCity,utc:dt(lg.depDate,lg.depTime,lg.depTZ),tz:lg.depTZ,known:lg.depKnown});
+      dayStops.push({label:'Arrive '+codeLabel(lg.arrCity)+modeLbl,city:lg.arrCity,utc:dt(lg.arrDate,lg.arrTime,lg.arrTZ),tz:lg.arrTZ,known:lg.arrKnown});
+    });
+    aLegs.forEach(lg=>{ if(lg.depDate!==day){ const modeLbl = lg.type === 'ground' ? ' (Ground)' : ''; dayStops.push({label:'Arrive '+codeLabel(lg.arrCity)+modeLbl,city:lg.arrCity,utc:dt(lg.arrDate,lg.arrTime,lg.arrTZ),tz:lg.arrTZ,known:lg.arrKnown}); } });
+    if(aLegs.length){
+      const lastArr=aLegs[aLegs.length-1];
+      const arrUTC=dt(lastArr.arrDate,lastArr.arrTime,lastArr.arrTZ);
+      // Only add artificial arrival stops if the last arriving leg of the day is NOT a ground leg
+      if(lastArr.type !== 'ground'){
+        if(isLast){ let ft=ds.fromTerminal||0; const homeUTC=arrUTC+ft*60*60000; const lbl=finalLabel?('Arrive '+finalLabel):'Arrive Home'; const cty=finalLabel?lastArr.arrCity:(homeCity||lastArr.arrCity); dayStops.push({label:lbl,city:cty,utc:homeUTC,tz:lastArr.arrTZ,known:lastArr.arrKnown}); }
+        else { const ath=(ds.airToHotel||0); const hotelUTC=arrUTC+ath*60*60000; const hname=hotelForArrival(day,lastArr.arrCity)||'Lodging'; dayStops.push({label:'Arrive '+hname,city:lastArr.arrCity,utc:hotelUTC,tz:lastArr.arrTZ,known:lastArr.arrKnown}); }
+      }
+    }
+    if(dayStops.length){
+      dayStops.sort((a,b)=>a.utc-b.utc);
+      const dedup=[]; for(let i=0;i<dayStops.length;i++){ const s=dayStops[i]; const prev=dedup[dedup.length-1]; if(prev && prev.utc===s.utc && cityMatch(prev.city,s.city)){ continue; } dedup.push(s); }
+      dedup.forEach(s=>{ s.day=day; });
+      out.push(dedup);
+    }
+  });
+  const flat=[]; out.forEach(ds=>ds.forEach(s=>flat.push(s)));
+  for(let i=0;i<flat.length;i++){ if(!flat[i].known){ let src=null; for(let j=i-1;j>=0;j--){ if(flat[j].known){ src=flat[j]; break; } } if(!src){ for(let j=i+1;j<flat.length;j++){ if(flat[j].known){ src=flat[j]; break; } } } if(src){ const delta=src.tz-flat[i].tz; flat[i].utc+=delta*3600000; flat[i].tz=src.tz; flat[i].inheritedTz=true; } } }
+  out.forEach(ds=>{ const refTZ=ds[0].tz; ds.forEach(s=>{ s.refTZ=refTZ; }); });
+  return out;
+}
+function codeLabel(city){ const c=iataFor(city); return c?c:(city||'?'); }
+function utcToLocalHHMM(utc,tz){ const local=new Date(utc+tz*3600000); return String(local.getUTCHours()).padStart(2,'0')+String(local.getUTCMinutes()).padStart(2,'0'); }
+function utcToLocalDate(utc,tz){ return new Date(utc+tz*3600000).toISOString().slice(0,10); }
+function tzLabelForStop(s){ if(s.known) return guessTZ(s.city,utcToLocalDate(s.utc,s.tz)).label||labelFromOffset(s.tz,utcToLocalDate(s.utc,s.tz)); return labelFromOffset(s.tz,utcToLocalDate(s.utc,s.tz))||''; }
+
+/* ===== ENCL 6 WORD EXPORT ===== */
+function downloadWord(){ if(!window._lastRows){ alert('Run a calculation first.'); return; } const rows=window._lastRows, T=window._lastTotals; const compByDay={}; rows.forEach(r=>{ compByDay[r.day]=r; });
+  const TB='<table border="1" cellspacing="0" cellpadding="4" style="border-collapse:collapse;width:100%;font-family:Calibri,Arial;font-size:9pt;">';
+  let h='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="UTF-8">';
+  h+='<style>@page{size:11in 8.5in;mso-page-orientation:landscape;margin:0.5in;} body{font-family:Calibri,Arial;font-size:9pt;}</style><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]--></head><body>';
+  h+='<p style="text-align:right;font-weight:bold;margin:0;">UWDCINST 12610.1A</p><p style="text-align:right;font-weight:bold;margin:0 0 6px 0;">14 April 2026</p>';
+  h+='<p style="text-align:center;font-size:13pt;font-weight:bold;color:#1a3a5c;margin:2px 0 8px 0;">Travel Compensatory Time Earned While In A Travel Status</p>';
+  h+=TB;
+  h+='<tr><td style="font-weight:bold;background:#eef3f8;width:18%;">Employee Name</td><td style="width:32%;">'+esc(val('empName'))+'</td><td style="font-weight:bold;background:#eef3f8;width:25%;">Purpose / Justification for TAD</td><td style="width:25%;">'+esc(val('purpose'))+'</td></tr>';
+  h+='<tr><td style="font-weight:bold;background:#eef3f8;">Total Travel Hours</td><td>'+(T.gGrossR/60).toFixed(2)+'</td><td style="font-weight:bold;background:#eef3f8;">Normal Home-to-Work Commute</td><td>'+(T.commuteHrs).toFixed(2)+'</td></tr>';
+  h+='<tr><td style="font-weight:bold;background:#eef3f8;">Total Travel Comp Hours Earned</td><td colspan="3" style="font-weight:bold;">'+(T.gComp/60).toFixed(2)+'</td></tr>';
+  h+='</table><br/>';
+  h+='<p style="font-weight:bold;color:#2c5a8c;margin:4px 0;">Itinerary of Travel & Travel Comp Reconciliation (grouped by day)</p>';
+  const chron=buildChronology();
+  chron.forEach(dayStops=>{ const day=dayStops[0].day; const r=compByDay[day];
+    h+='<p style="font-weight:bold;background:#1a3a5c;color:#fff;padding:3px 6px;margin:6px 0 0 0;">'+fmtDate(day)+'</p>'+TB;
+    h+='<tr style="background:#eef3f8;font-weight:bold;"><td>Stop</td><td>City</td><td>Time</td></tr>';
+    dayStops.forEach(s=>{ const hhmm=utcToLocalHHMM(s.utc,s.tz); const locTz=tzLabelForStop(s); let timeCell=hhmm+(locTz?(' '+locTz):''); if(s.tz!==s.refTZ){ const refHHMM=utcToLocalHHMM(s.utc,s.refTZ); const refLbl=labelFromOffset(s.refTZ,utcToLocalDate(s.utc,s.refTZ)); timeCell+=' ('+refHHMM+(refLbl?(' '+refLbl):'')+')'; }
+      h+='<tr><td>'+esc(s.label)+'</td><td>'+esc(s.city)+'</td><td>'+timeCell+'</td></tr>'; });
+        if(r){ h+='<tr style="background:#f7f9fb;"><td colspan="3" style="font-size:8.5pt;">Day total: Flight '+(r.flightMin/60).toFixed(2)+' | Layover '+(r.layoverMin/60).toFixed(2)+' | Ground '+(r.groundMin/60).toFixed(2)+' | Wait '+(r.waitMin/60).toFixed(2)+' | Travel '+(r.grossRMin/60).toFixed(2)+' | -Commute '+(r.commuteAppMin/60).toFixed(2)+' | -Sched '+(r.schedMin/60).toFixed(2)+' | +Worked '+(r.workedCapMin/60).toFixed(2)+' | <b>Comp '+(r.compMin/60).toFixed(2)+'</b></td></tr>'; }
+    h+='</table>'; });
+  h+='<p style="font-size:12pt;font-weight:bold;color:#1a3a5c;margin:8px 0;">TOTAL TRAVEL COMPENSATORY TIME EARNED: '+(T.gComp/60).toFixed(2)+' hours</p>';
+  var notedLegs=legs.filter(function(l){return l.note&&l.note.trim();});
+  var notesHtml='';
+  if(notedLegs.length){ notedLegs.forEach(function(l){ notesHtml+='<div style="margin:2px 0;">'+sq()+' '+esc(l.depCity)+' to '+esc(l.arrCity)+' ('+fmtDate(l.depDate)+'): '+esc(l.note)+'</div>'; }); }
+  else { notesHtml=' '; }
+  h+='<p style="font-weight:bold;color:#2c5a8c;margin:4px 0;">Notes / Employee Information</p>'+TB+'<tr><td style="min-height:60px;word-wrap:break-word;overflow-wrap:break-word;white-space:normal;">'+notesHtml+'</td></tr></table><br/>';
+  h+=TB+'<tr><td style="width:60%;padding-top:22px;padding-bottom:22px;"><b>Employee'+sq()+'s Signature:</b></td><td style="width:40%;"><b>Date:</b></td></tr>';
+  h+='<tr><td style="padding-top:22px;padding-bottom:22px;"><b>Supervisor'+sq()+'s Signature:</b></td><td><b>Date:</b></td></tr></table>';
+  h+='<p style="text-align:right;font-weight:bold;margin:6px 0 0 0;">Encl (6)</p>';
+  h+='</body></html>';
+  const b=new Blob(['\ufeff'+h],{type:'application/msword'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download='Encl6_Travel_Comp_'+(val('empName')||'employee').replace(/[^a-z0-9]/gi,'_')+'.doc'; a.click(); }
+
+/* ===== HELPERS (corruption-proof esc) ===== */
+function sq(){ return String.fromCharCode(39); }
+function val(id){ const e=document.getElementById(id); return e?e.value:''; }
+function setVal(id,v){ const e=document.getElementById(id); if(e&&v!==undefined&&v!==null) e.value=v; }
+function esc(s){ if(s==null) return ''; var A=String.fromCharCode(38),L=String.fromCharCode(60),Gt=String.fromCharCode(62),Q=String.fromCharCode(34); return String(s).split(A).join(A+'amp;').split(L).join(A+'lt;').split(Gt).join(A+'gt;').split(Q).join(A+'quot;'); }
+function msg(t,err){ document.getElementById('parseMsg').innerHTML='<div class="'+(err?'warn':'ok')+'">'+esc(t)+'</div>'; }
+function status(id,cls,t){ document.getElementById(id).innerHTML='<div class="'+cls+'">'+esc(t)+'</div>'; }
+function minToHHMM(min){ min=Math.round(min); const h=Math.floor(min/60),m=min%60; return h+':'+String(m).padStart(2,'0'); }
+function fmtDate(iso){ if(!iso) return '-'; return new Date(iso+"T12:00:00").toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}); }
+function clearTrip(){ legs=[]; dayState={}; legSeq=0; hotels=[]; cars=[]; setVal('rawItin',''); setVal('purpose',''); const nm=document.getElementById('pdfFileName'); if(nm){ nm.style.display='none'; nm.textContent=''; } const pf=document.getElementById('pdfFile'); if(pf) pf.value=''; document.getElementById('legsContainer').innerHTML=''; document.getElementById('daysContainer').innerHTML=''; document.getElementById('parseMsg').innerHTML=''; document.getElementById('nonFlightMsg').innerHTML=''; document.getElementById('legsCard').style.display='none'; document.getElementById('daysCard').style.display='none'; document.getElementById('resultsCard').style.display='none'; localStorage.removeItem('uwdc_active_trip_session'); }
+
+/* ===== SAVE / LOAD TRIP (full trip state to JSON) ===== */
+function collectTrip(){
+  return {
+    _type:'uwdc_travelcomp_trip', _ver:1, _saved:new Date().toISOString(),
+    trip:{
+      purpose:val('purpose'), tdyLoc:val('tdyLoc'), origLoc:val('origLoc'), finalLoc:val('finalLoc'),
+      rawItin:val('rawItin')
+    },
+    legs:legs, legSeq:legSeq, hotels:hotels, cars:cars, dayState:dayState
+  };
+}
+function saveTrip(){
+  if(!legs.length){ msg('Nothing to save yet. Parse or add legs first.',true); return; }
+  const data=collectTrip();
+  const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(b);
+  const who=(val('empName')||'employee').replace(/[^a-z0-9]/gi,'_');
+  const first=legs[0]&&legs[0].depDate?legs[0].depDate:'trip';
+  a.download='trip_'+who+'_'+first+'.json'; a.click();
+  msg('Trip saved to JSON. Reload it anytime with Load Trip.',false);
+}
+function applyTrip(data){
+  if(!data||data._type!=='uwdc_travelcomp_trip'){ msg('That file is not a saved trip.',true); return; }
+  const t=data.trip||{};
+  setVal('purpose',t.purpose||''); setVal('tdyLoc',t.tdyLoc||''); setVal('origLoc',t.origLoc||''); setVal('finalLoc',t.finalLoc||''); setVal('rawItin',t.rawItin||'');
+  legs=Array.isArray(data.legs)?data.legs:[];
+  hotels=Array.isArray(data.hotels)?data.hotels:[];
+  cars=Array.isArray(data.cars)?data.cars:[];
+  dayState=(data.dayState&&typeof data.dayState==='object')?data.dayState:{};
+  legSeq=(typeof data.legSeq==='number')?data.legSeq:legs.reduce((m,l)=>Math.max(m,l.id||0),0);
+  renderNonFlight(); renderLegs(); buildDays();
+  document.getElementById('legsCard').style.display='block';
+  document.getElementById('daysCard').style.display='block';
+  document.getElementById('resultsCard').style.display='none';
+  msg('Loaded saved trip ('+legs.length+' leg(s)). Review Steps 2b/3, then Calculate.',false);
+}
+function loadTrip(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{ try{ applyTrip(JSON.parse(e.target.result)); }
+    catch(err){ msg('Could not read trip file: '+err.message,true); } };
+  r.readAsText(f); ev.target.value='';
+}
+
+/* ===== AUTO-SAVE ACTIVE SESSION ===== */
+function autoSaveSession() {
+  localStorage.setItem('uwdc_active_trip_session', JSON.stringify(collectTrip()));
+}
+function autoRestoreSession() {
+  const saved = localStorage.getItem('uwdc_active_trip_session');
+  if (saved) {
+    try {
+      applyTrip(JSON.parse(saved));
+      msg('Restored your previous active session automatically.', false);
+    } catch(e) {
+      console.warn('Session restore bypassed:', e.message);
+    }
+  }
+}
+
+window.addEventListener('DOMContentLoaded',()=>{ 
+  loadSettingsAuto(); 
+  renderSchedDetail(); 
+  autoRestoreSession();
+  
+  // Drag and drop zone events initialization
+  const dz = document.getElementById('dropZone');
+  if(dz){
+    dz.addEventListener('click', () => document.getElementById('pdfFile').click());
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.style.background = '#eef3f8'; });
+    dz.addEventListener('dragleave', () => { dz.style.background = '#fafbfc'; });
+    dz.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dz.style.background = '#fafbfc';
+      const files = e.dataTransfer.files;
+      if (files.length) {
+        document.getElementById('pdfFile').files = files;
+        loadPdf({ target: { files: files } });
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>
